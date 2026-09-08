@@ -46,6 +46,7 @@ export async function runSmoke({win,app,root,store,state}) {
   await new Promise(resolve=>setTimeout(resolve,100));
   assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Valorant session'));
   assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('1h 30m'));
+  assert.equal(await win.webContents.executeJavaScript("document.querySelector('.session-card.chosen').nextElementSibling.getAttribute('aria-label')"),'Session details');
   assert.doesNotMatch(await win.webContents.executeJavaScript('document.body.innerText'),/Timeline|Assistant|Tasks|Goals/);
   fs.mkdirSync(path.join(root,'output','playwright'),{recursive:true});
   const frame=await win.webContents.capturePage();fs.writeFileSync(path.join(root,'output','playwright','desktop-sessions.png'),frame.toPNG());

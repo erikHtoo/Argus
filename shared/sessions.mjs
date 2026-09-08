@@ -70,12 +70,21 @@ export function daySessions(rows,date,now=new Date()){
   if(!current.length){current=[cell];continue;}
   const main=summarize(current).winner.label,leader=rank(cell.apps)[0].label,last=pending.at(-1)||current.at(-1);
   if(cell.start-last.end>=5*60000||(main==='Idle')!==(leader==='Idle')){current.push(...pending);pending=[];finish();current=[cell];continue;}
-  if(leader===main){current.push(...pending,cell);pending=[];}
-  else {
-   // A browser detour before YouTube begins belongs to the previous session;
-   // it must not move the new YouTube boundary backwards into that detour.
-   if(pending.length&&leader!==summarize(pending).winner.label){current.push(...pending);pending=[];}
-   pending.push(cell);if(cell.end-pending[0].start>=15*60000){finish();current=pending;pending=[];}
+  if(!pending.length&&leader===main){current.push(cell);continue;}
+  pending.push(cell);
+  const candidate=rank(pending[0].apps)[0].label;
+  if(leader!==candidate){
+   let tail=pending.length-1;
+   while(tail>0&&rank(pending[tail-1].apps)[0].label===leader)tail--;
+   // A quick check must not reset an otherwise clear activity change.
+   if(cell.end-pending[tail].start>=2*60000){
+    current.push(...pending.slice(0,tail));pending=pending.slice(tail);
+    if(leader===main){current.push(...pending);pending=[];}
+   }
+  }
+  if(pending.length){
+   const proposal=summarize(pending);
+   if(cell.end-pending[0].start>=15*60000&&proposal.winner.label!==main&&proposal.winner.seconds/proposal.total>=.7){finish();current=pending;pending=[];}
   }
  }
  // A short unfinished detour belongs to the current session until it establishes a change.
