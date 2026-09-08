@@ -5,6 +5,7 @@ import {createPreview} from './preview';
 import {useAudioCapture} from './audio';
 import {durationMinutes,localDate,taskOrder} from '../shared/core.mjs';
 import './styles.css';
+import './minimal.css';
 
 const api=window.argus || createPreview();
 const preview=api.platform==='preview';
