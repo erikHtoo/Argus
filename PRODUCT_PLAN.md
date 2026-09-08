@@ -1,6 +1,6 @@
 # Argus product and implementation plan
 
-Status: proposed plan; implementation has not started.
+Status: archived original proposal. Superseded by the minimal activity-journal pivot documented in README.md. Chat, tasks, goals, screenshots, and audio are no longer part of the active app.
 Working assumptions: Windows 11 first, a single personal user, local storage by default, English first, optional cloud AI. macOS comes after the Windows capture pipeline works reliably.
 
 ## Product promise

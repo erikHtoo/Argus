@@ -2,6 +2,17 @@
 
 This file records executed checks, distinct from features that still require a real-device pilot.
 
+## Activity journal pivot — September 8, 2026
+
+- 26 tests passed, including five-minute qualification, two-minute detours, sustained app changes, dominant-time ratios, title retention, privacy boundaries, downtime, midnight, and legacy data preservation.
+- Production build and syntax/type command passed.
+- Isolated native Electron smoke passed: journal rendering, purpose-label persistence, encryption, deletion, rejected chat commands, disabled media settings, Settings navigation, and layout at the 640-pixel minimum window width.
+- Native journal screenshot inspected with synthetic Valorant and YouTube blocks. No personal screen content is included in test artifacts.
+- Second-instance launch exits cleanly without cache errors or changing the primary database.
+- New aggregation is verified with deterministic sample sequences. An extended real gaming/video pilot of this version has not yet been performed.
+
+The checks below describe earlier versions, including features since removed.
+
 ## Executed
 
 - 16 unit/integration tests passed: task and goal validation, foreground session behavior, excluded and locked gaps, midnight boundaries, plan capacity and atomic acceptance, task deduplication, history deletion, retention, endpoint restrictions, encrypted SQLite restart, and local mock AI/transcription services.

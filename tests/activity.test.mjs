@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {activityContext,captureHealth,summarizeActivity} from '../shared/activity.mjs';
-import {activityAnswer} from '../shared/activity-answer.mjs';
 import {emptyState,observeActivity} from '../shared/core.mjs';
 
 test('YouTube is recognized without treating arbitrary titles containing code as programming',()=>{
@@ -36,11 +35,4 @@ test('title opt-out does not persist a site label inferred from the hidden title
   const state=emptyState();state.settings.activityEnabled=true;
   observeActivity(state,{app:'chrome',title:'Private video - YouTube',idleSeconds:0});
   assert.equal(state.sessions[0].title,'');assert.equal(state.sessions[0].label,'chrome');
-});
-test('offline time questions aggregate all matching sessions instead of an arbitrary search result',()=>{
-  const state=emptyState();state.sessions=[{id:'a',app:'chrome',title:'Video - YouTube',start:'2026-09-08T10:00:00',end:'2026-09-08T10:30:00'},
-    {id:'b',app:'cs2',title:'Counter Strike',start:'2026-09-08T10:30:00',end:'2026-09-08T11:00:00'}];
-  const answer=activityAnswer(state,'How much time on YouTube today?',new Date('2026-09-08T12:00:00'));
-  assert.match(answer.text,/30 minutes/);assert.equal(answer.sources[0].id,'a');assert.doesNotMatch(answer.text,/cs2/);
-  assert.match(activityAnswer(state,'How much time gaming yesterday?',new Date('2026-09-08T12:00:00')).text,/No matching/);
 });
