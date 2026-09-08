@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+.tools/
+.test-data/
+test-results/
+*.log
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.enc
+coverage/
+output/playwright/
+.playwright-cli/

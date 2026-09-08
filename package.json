@@ -1,0 +1,62 @@
+{
+  "name": "argus-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A local-first desktop memory and daily planning companion",
+  "author": "Argus",
+  "license": "MIT",
+  "type": "module",
+  "main": "electron/main.mjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "start": "electron .",
+    "test": "node --test tests/*.test.mjs",
+    "check": "tsc --noEmit",
+    "package": "pnpm build && electron-builder --win portable --x64"
+  },
+  "dependencies": {
+    "lucide-react": "^1.41.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sql.js": "^1.14.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
+  },
+  "build": {
+    "appId": "com.argus.desktop",
+    "productName": "Argus",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "shared/**/*",
+      "native/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "native/**/*"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Argus-${version}-windows-x64.exe"
+    }
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^40.10.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}
