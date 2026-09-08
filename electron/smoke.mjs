@@ -22,7 +22,7 @@ export async function runSmoke({win,app,root,store,state}) {
   await invoke('memory:delete',{id:memory.id});snapshot=await invoke('snapshot');assert.equal(snapshot.memories.some(m=>m.id===memory.id),false);assert.equal(snapshot.tasks.some(t=>t.sourceId===memory.id),false);
   await invoke('task:delete',{id:task.id});await invoke('goal:delete',{id:goal.id});
   assert.equal(await win.webContents.executeJavaScript('typeof window.require'),'undefined');
-  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Make room for what matters'));
+  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Time by app'));
   fs.mkdirSync(path.join(root,'output','playwright'),{recursive:true});
   const frame=await win.webContents.capturePage();fs.writeFileSync(path.join(root,'output','playwright','desktop-empty.png'),frame.toPNG());
   console.log('PASS: native Electron launch, sandboxed IPC, task/goal/focus flows, source-linked search, key redaction, encrypted persistence, and deletion.');

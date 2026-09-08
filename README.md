@@ -14,6 +14,12 @@ npm run build
 npm start
 ```
 
+`npm start` rebuilds the UI before opening the desktop app. To keep Argus in the tray, use `npm run start:background`. The Today dashboard shows whether samples are actually arriving, the current recognized app, and a time-by-app breakdown. YouTube and Twitch are separated from general browser use when window titles are enabled. Known games are separated from game launchers; unfamiliar apps remain unknown and can be corrected in Timeline.
+
+The offline assistant can answer activity-total questions such as “How much time on YouTube today?” or “Where did my time go yesterday?” These totals describe foreground time, not proof of video playback or productivity.
+
+For an explicitly enabled 30-minute diagnostic run, use `node scripts/start.mjs --background --track-activity --verify-activity`. This enables app and window-title capture and writes a temporary verification report to `%LOCALAPPDATA%\\Argus\\activity-check.json`. The report contains aggregate app labels, freshness, save status, and restart counts; it excludes window titles, notes, and API keys. Report updates stop after 30 minutes; normal activity tracking continues until paused or quit. Delete the report when no longer needed.
+
 For an interactive browser preview:
 
 ```powershell

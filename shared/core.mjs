@@ -1,4 +1,5 @@
 const randomUUID = () => globalThis.crypto.randomUUID();
+import {activityContext} from './activity.mjs';
 
 export const DEFAULT_SETTINGS = Object.freeze({
   activityEnabled: false, titlesEnabled: false, screenEnabled: false,
@@ -51,11 +52,7 @@ export function proposePlan(state, now = new Date(), budget = state.settings.ava
   return { blocks, unscheduled, message: blocks.length ? `${blocks.length} focus blocks, with 5-minute breaks where space allows.${unscheduled.length ? ` ${unscheduled.length} tasks do not fit; adjust your available time or task estimates.` : ''}` : 'No new tasks fit before your day ends. Adjust your day-end time or review existing blocks.' };
 }
 export function classify(app, title = '') {
-  const name = `${app} ${title}`.toLowerCase();
-  if (/code|devenv|jetbrains|pycharm|webstorm|terminal|powershell/.test(name)) return 'coding';
-  if (/teams|slack|discord|outlook|zoom/.test(name)) return 'communication';
-  if (/steam|minecraft|valorant|roblox|game/.test(name)) return 'entertainment';
-  return 'unknown';
+  return activityContext(app,title).category;
 }
 export function isExcluded(app, title, exclusions) { const value=`${app} ${title}`.toLowerCase(); return exclusions.some(x=> x.trim() && value.includes(x.trim().toLowerCase())); }
 export function observeActivity(state, sample, now = new Date()) {
@@ -66,7 +63,8 @@ export function observeActivity(state, sample, now = new Date()) {
   const inputIdle=sample.idleSeconds>=state.settings.idleSeconds;
   // Never stretch a session across suspend, collector downtime, or midnight.
   if(previous && !previous.closed && previous.app===app && previous.title===title && previous.inputIdle===inputIdle && now-new Date(previous.end)<=12000 && localDate(new Date(previous.start))===localDate(now)) { previous.end=stamp; return previous; }
-  const session={id:randomUUID(),app,title,start:stamp,end:stamp,inputIdle,category:classify(app,title),intent:'unknown'}; state.sessions.push(session); return session;
+  const context=activityContext(app,title);
+  const session={id:randomUUID(),app,title,label:context.label,detail:context.detail,start:stamp,end:stamp,inputIdle,category:context.category,intent:'unknown'}; state.sessions.push(session); return session;
 }
 export function closeActivity(state) { const previous=state.sessions.at(-1);if(previous)previous.closed=true; }
 export function acceptPlan(state,blocks) {

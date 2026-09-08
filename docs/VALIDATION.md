@@ -8,11 +8,18 @@ This file records executed checks, distinct from features that still require a r
 - Native Windows activity helper returned a valid foreground/inactivity sample. Window content was neither printed nor retained by the test.
 - Native Windows OCR recognized a synthetic sentence rendered in memory.
 
-## In progress
+## Activity improvements verified on September 8, 2026
 
-- Production frontend build and desktop launch.
-- Browser interaction and layout checks.
-- Packaging and repository push.
+- All 22 unit/integration tests passed, including new site/game recognition, title opt-out, stale tracker status, time aggregation, and offline activity questions.
+- Production frontend build and source checks passed.
+- Native Electron smoke passed through the sandboxed preload/IPC: tasks, goals, focus, source-linked search, key redaction, encrypted save/reload, and deletion.
+- Visually inspected a capture of the actual Electron test window with the activity panel.
+- User-authorized live background check observed both YouTube and VALORANT-Win64-Shipping. At 10:55 UTC, 53 native samples had arrived with zero collector restarts and no storage errors. These are activity observations, not assertions about video playback or user productivity.
+
+## Still pending
+
+- Standalone release packaging and signing.
+- Multi-day battery/performance pilot.
 
 ## Not yet established
 

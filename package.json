@@ -10,7 +10,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "start": "electron .",
+    "start": "node scripts/start.mjs",
+    "start:background": "node scripts/start.mjs --background",
+    "test:desktop": "node scripts/desktop-smoke.mjs",
     "test": "node --test tests/*.test.mjs",
     "check": "tsc --noEmit",
     "package": "pnpm build && electron-builder --win portable --x64"

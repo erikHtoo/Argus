@@ -1,4 +1,5 @@
 import {emptyState,makeTask,makeGoal,updateSettings,proposePlan,searchMemory,deleteHistory,suggestTasks,taskOrder,localDate} from '../shared/core.mjs';
+import {activityAnswer} from '../shared/activity-answer.mjs';
 
 function exampleDay() {
   const state=emptyState();const today=localDate();const at=(h,m)=>new Date(`${today}T${h}:${m}:00`).toISOString();
@@ -15,6 +16,7 @@ export function createPreview() {
   const listeners=new Set();const snapshot=()=>structuredClone({...state,runtime:{activity:'preview',screen:'off',microphone:'off',playback:'off',storage:'preview only',platform:'browser',captureAllowed:false}});
   function save(){localStorage.setItem('argus-preview-v1',JSON.stringify(state));for(const listener of listeners)listener(snapshot());}
   return {platform:'preview',subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},async invoke(action,p={}){
+    if(action==='chat'){const answer=activityAnswer(state,p.question);if(answer)return {...answer,text:`${answer.text}\n\nPreview · sample activity.`};}
     let result=true;
     switch(action){
       case 'snapshot':return snapshot();
