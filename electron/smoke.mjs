@@ -22,9 +22,11 @@ export async function runSmoke({win,app,root,store,state}) {
   assert.deepEqual(fs.readFileSync(store.filename),before);
   assert.ok(app.getPath('sessionData').endsWith('browser-session'));
   await assert.rejects(()=>invoke('chat',{question:'hello'}),/Unknown command/);
-  const now=new Date();now.setHours(17,0,0,0);
-  state.sessions.push({id:'smoke-journal',journal:true,app:'Valorant',label:'Valorant',detail:'Game',start:now.toISOString(),end:new Date(+now+7200000).toISOString(),activeSeconds:6900,title:''});
-  state.sessions.push({id:'smoke-video',journal:true,app:'chrome',label:'YouTube',detail:'Video',start:new Date(+now+7200000).toISOString(),end:new Date(+now+10800000).toISOString(),activeSeconds:3480,title:'A quiet evening in Japan — YouTube',purpose:'fun'});
+  const now=new Date();now.setDate(now.getDate()-1);now.setHours(17,0,0,0);
+  for(let m=0;m<180;m++){
+    const label=m>=120?'YouTube':m%20<15?'Valorant':'Chrome';
+    state.sessions.push({id:m===0?'smoke-journal':`fixture-${m}`,minute:true,app:label==='YouTube'?'chrome':label,label,detail:label==='Valorant'?'Game':label==='YouTube'?'Video':'Browser',category:label==='Valorant'||label==='YouTube'?'entertainment':'unknown',start:new Date(+now+m*60000).toISOString(),end:new Date(+now+(m+1)*60000).toISOString(),activeSeconds:60,title:''});
+  }
   await invoke('session:update',{id:'smoke-journal',purpose:'fun'});
   assert.equal((await invoke('snapshot')).sessions[0].purpose,'fun');
   assert.equal(store.load().sessions[0].purpose,'fun');
@@ -34,10 +36,19 @@ export async function runSmoke({win,app,root,store,state}) {
   assert.equal(state.settings.micEnabled,false);
   await new Promise(resolve=>setTimeout(resolve,200));
   assert.equal(await win.webContents.executeJavaScript('typeof window.require'),'undefined');
-  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Played Valorant'));
+  const date=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  await win.webContents.executeJavaScript(`(()=>{const el=document.querySelector('input[type=date]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el,"${date}");el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+  await new Promise(resolve=>setTimeout(resolve,100));
+  assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.session-card').length"),2);
+  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Valorant'));
+  assert.equal(await win.webContents.executeJavaScript("document.querySelector('.hour-detail')"),null);
+  await win.webContents.executeJavaScript("document.querySelectorAll('.session-card')[0].click()");
+  await new Promise(resolve=>setTimeout(resolve,100));
+  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Valorant session'));
+  assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('1h 30m'));
   assert.doesNotMatch(await win.webContents.executeJavaScript('document.body.innerText'),/Timeline|Assistant|Tasks|Goals/);
   fs.mkdirSync(path.join(root,'output','playwright'),{recursive:true});
-  const frame=await win.webContents.capturePage();fs.writeFileSync(path.join(root,'output','playwright','desktop-journal.png'),frame.toPNG());
+  const frame=await win.webContents.capturePage();fs.writeFileSync(path.join(root,'output','playwright','desktop-sessions.png'),frame.toPNG());
   await win.webContents.executeJavaScript("[...document.querySelectorAll('button')].find(b=>b.textContent==='Settings').click()");
   await new Promise(resolve=>setTimeout(resolve,100));
   assert.ok((await win.webContents.executeJavaScript('document.body.innerText')).includes('Window titles'));
@@ -47,6 +58,6 @@ export async function runSmoke({win,app,root,store,state}) {
   await new Promise(resolve=>setTimeout(resolve,100));
   assert.equal(await win.webContents.executeJavaScript('document.documentElement.scrollWidth <= window.innerWidth'),true);
   await invoke('history:delete',{range:'all'});assert.equal((await invoke('snapshot')).sessions.length,0);
-  console.log('PASS: journal UI, purpose persistence, encrypted storage, deletion, removed chat, disabled media, and second-instance cache isolation.');
+  console.log('PASS: variable sessions, 90/30-minute drill-down, date filtering, purpose persistence, encrypted storage, deletion, removed chat, disabled media, and second-instance cache isolation.');
   app.quit();
 }

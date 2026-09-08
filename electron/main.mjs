@@ -5,7 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { openStore } from './store.mjs';
-import {observeJournal as observeActivity,closeJournal as closeActivity,journalEntries} from '../shared/journal.mjs';
+import {observeSessionTotals as observeActivity,closeSessionTotals as closeActivity,daySessions} from '../shared/sessions.mjs';
+const journalEntries=sessions=>sessions.filter(s=>!s.inputIdle);
 import {activityContext,captureHealth,summarizeActivity} from '../shared/activity.mjs';
 import {isExcluded,updateSettings,deleteHistory,pruneHistory} from '../shared/core.mjs';
 
@@ -106,7 +107,8 @@ async function command(action,payload) {
     case 'data:export':{
       const result=await dialog.showSaveDialog(win,{defaultPath:'argus-journal.json',filters:[{name:'JSON',extensions:['json']}]});
       if(result.canceled)return false;
-      fs.writeFileSync(result.filePath,JSON.stringify(journalEntries(state.sessions),null,2));return true;
+      const dates=[...new Set(state.sessions.map(s=>{const d=new Date(s.start);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}))].sort();
+      fs.writeFileSync(result.filePath,JSON.stringify(dates.map(date=>({date,sessions:daySessions(state.sessions,date)})),null,2));return true;
     }
     default:throw new Error('Unknown command.');
   }

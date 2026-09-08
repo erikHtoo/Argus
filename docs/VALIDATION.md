@@ -4,6 +4,14 @@ This file records executed checks, distinct from features that still require a r
 
 ## Activity journal pivot — September 8, 2026
 
+### Variable sessions — September 9, 2026
+
+The session implementation supersedes the five-minute visit/detour implementation below. The day overview contains variable-length dominant-activity sessions, with app totals available on click. No fixed-hour grid is used.
+
+- 28 unit/integration checks passed, including a two-hour session with 90 minutes gaming / 30 minutes browser time, subsequent YouTube boundaries, idle gaming and Discord, passive video, video titles, missing samples, and partial deletion.
+- Native Electron verified the exact 90/30-minute breakdown, session selection, date filtering, encrypted persistence, deletion, and narrow-window layout. Screenshot inspected using synthetic activity.
+- Production build and syntax/type check passed. Extended real-world gaming/video tracking remains a user pilot.
+
 - 26 tests passed, including five-minute qualification, two-minute detours, sustained app changes, dominant-time ratios, title retention, privacy boundaries, downtime, midnight, and legacy data preservation.
 - Production build and syntax/type command passed.
 - Isolated native Electron smoke passed: journal rendering, purpose-label persistence, encryption, deletion, rejected chat commands, disabled media settings, Settings navigation, and layout at the 640-pixel minimum window width.

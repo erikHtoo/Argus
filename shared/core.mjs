@@ -84,16 +84,20 @@ export function durationMinutes(session, date = null) {
   if(date) { const floor=new Date(`${date}T00:00:00`).getTime(); const ceiling=new Date(`${date}T00:00:00`); ceiling.setDate(ceiling.getDate()+1); start=Math.max(start,floor); end=Math.min(end,ceiling.getTime()); }
   return Math.max(0,(end-start)/60000);
 }
+function clipActivity(row,start,end){
+  const ratio=Math.max(0,(end-start)/(new Date(row.end)-new Date(row.start)));
+  return {...row,start:new Date(start).toISOString(),end:new Date(end).toISOString(),...(row.activeSeconds!==undefined?{activeSeconds:row.activeSeconds*ratio}:{}),...(row.titles?{titles:row.titles.map(t=>({...t,seconds:t.seconds*ratio}))}:{})};
+}
 export function pruneHistory(state, cutoff) {
   const ms=new Date(cutoff).getTime();
-  state.sessions=state.sessions.filter(s=>new Date(s.end).getTime()>=ms).map(s=>new Date(s.start).getTime()<ms ? {...s,start:new Date(ms).toISOString()} : s);
+  state.sessions=state.sessions.filter(s=>new Date(s.end).getTime()>ms).map(s=>new Date(s.start).getTime()<ms ? clipActivity(s,ms,+new Date(s.end)) : s);
   const removed=new Set(state.memories.filter(m=>new Date(m.createdAt).getTime()<ms).map(m=>m.id));
   state.memories=state.memories.filter(m=>!removed.has(m.id));
   state.tasks=state.tasks.filter(t=>!(t.status==='inbox' && removed.has(t.sourceId))).map(t=>removed.has(t.sourceId)?{...t,sourceId:''}:t);
 }
 export function deleteHistory(state, since = null) {
   const cutoff=since ? new Date(since).getTime() : -Infinity;
-  state.sessions=state.sessions.filter(s=>new Date(s.start).getTime()<cutoff).map(s=>new Date(s.end).getTime()>cutoff?{...s,end:new Date(cutoff).toISOString()}:s);
+  state.sessions=state.sessions.filter(s=>new Date(s.start).getTime()<cutoff).map(s=>new Date(s.end).getTime()>cutoff?clipActivity(s,+new Date(s.start),cutoff):s);
   const removed=new Set(state.memories.filter(m=>new Date(m.createdAt).getTime()>=cutoff).map(m=>m.id));
   state.memories=state.memories.filter(m=>!removed.has(m.id));
   state.tasks=state.tasks.filter(t=>!(t.status==='inbox' && removed.has(t.sourceId))).map(t=>removed.has(t.sourceId)?{...t,sourceId:''}:t);
