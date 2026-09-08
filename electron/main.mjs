@@ -14,11 +14,21 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const testMode=process.env.ARGUS_TEST_MODE==='1';
 const background=process.argv.includes('--background');
 const verifyUntil=process.argv.includes('--verify-activity')?Date.now()+30*60000:0;
-app.setPath('userData',testMode?path.join(root,'.test-data','electron'):path.join(process.env.LOCALAPPDATA || os.homedir(),'Argus'));
+const testProfile=/^[a-z0-9-]{1,60}$/.test(process.env.ARGUS_TEST_RUN||'')?`electron-${process.env.ARGUS_TEST_RUN}`:'electron';
+app.setPath('userData',testMode?path.join(root,'.test-data',testProfile):path.join(process.env.LOCALAPPDATA || os.homedir(),'Argus'));
 app.setAppUserModelId('com.argus.desktop');
-if(!app.requestSingleInstanceLock()) app.quit();
+// A secondary process must stop before opening the database or Chromium caches.
+if(!app.requestSingleInstanceLock()) app.exit(0);
+const browserData=path.join(app.getPath('userData'),'browser-session');
+fs.mkdirSync(browserData,{recursive:true});
+app.setPath('sessionData',browserData);
 let win,tray,store,state,collector,saveTimer,screenTimer,healthTimer,retryTimer,shutdown=false,suspended=false,lastSample=null,lastSampleAt=0,captureEpoch=0,screenBusy=false,aiBusy=false,collectorStartedAt=0;
 let samplesReceived=0,collectorRestarts=0,collectorError='',lastSavedAt=null,diagnosticError='';
+let showOnReady=!background;
+app.on('second-instance',()=>{
+  showOnReady=true;
+  if(win&&!win.isDestroyed()){if(win.isMinimized())win.restore();win.show();win.focus();}
+});
 const audioBusy=new Set();
 const runtime={activity:'off',screen:'off',microphone:'off',playback:'off',storage:'encrypted',error:'',platform:process.platform};
 const script=name=>path.join(root.includes('app.asar')?root.replace('app.asar','app.asar.unpacked'):root,'native',name);
@@ -134,10 +144,11 @@ app.whenReady().then(async()=>{
   session.defaultSession.setPermissionRequestHandler((contents,permission,callback,details)=>callback(contents===win?.webContents&&permission==='media'&&Boolean(state.settings.micEnabled||state.settings.playbackEnabled)&&!state.settings.paused));
   session.defaultSession.setPermissionCheckHandler((contents,permission)=>contents===win?.webContents&&permission==='media'&&Boolean(state.settings.micEnabled||state.settings.playbackEnabled)&&!state.settings.paused);
   session.defaultSession.setDisplayMediaRequestHandler(async(request,callback)=>{try{if(!state.settings.playbackEnabled||!canCapture()){callback({});return;}const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:0,height:0}});callback({video:sources[0],audio:'loopback'});}catch{callback({});}});
-  win=new BrowserWindow({width:1440,height:960,minWidth:1000,minHeight:720,show:!testMode&&!background,backgroundColor:'#f6f7f2',title:'Argus',autoHideMenuBar:true,webPreferences:{preload:path.join(root,'electron','preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+  win=new BrowserWindow({width:1440,height:960,minWidth:1000,minHeight:720,show:!testMode&&showOnReady,backgroundColor:'#f6f7f2',title:'Argus',autoHideMenuBar:true,webPreferences:{preload:path.join(root,'electron','preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
   win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-navigate',event=>event.preventDefault());
   ipcMain.handle('argus:command',async(event,action,payload)=>{if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)return {ok:false,error:'Untrusted caller.'};try{return {ok:true,value:await command(action,payload)};}catch(error){return {ok:false,error:error.message || 'Unable to complete the action.'};}});
   await win.loadFile(path.join(root,'dist','index.html'));
+  if(!testMode&&showOnReady){win.show();win.focus();}
   // A generated geometric tray mark avoids external icon assets.
   const pixels=Buffer.alloc(16*16*4);for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=Math.hypot(x-7.5,y-7.5);const i=(y*16+x)*4;pixels[i]=80;pixels[i+1]=103;pixels[i+2]=65;pixels[i+3]=(d<7&&d>4)||d<2?255:0;}
   tray=new Tray(nativeImage.createFromBitmap(pixels,{width:16,height:16}));tray.on('double-click',()=>{win.show();win.focus();});
@@ -152,7 +163,6 @@ app.whenReady().then(async()=>{
     try {const {runSmoke}=await import('./smoke.mjs');await runSmoke({win,app,root,store,state});}
     catch(error){console.error('FAIL: desktop smoke:',error.message);app.exit(1);}
   }
-}).catch(error=>{dialog.showErrorBox('Argus could not start',error.message);app.quit();});
-app.on('second-instance',()=>{if(win){win.show();win.focus();}});
+}).catch(error=>{if(testMode){console.error('Argus test startup failed:',error.message);app.exit(1);}else{dialog.showErrorBox('Argus could not start',error.message);app.quit();}});
 app.on('before-quit',()=>{shutdown=true;clearInterval(screenTimer);clearInterval(healthTimer);clearTimeout(retryTimer);clearTimeout(saveTimer);stopCollector();if(store&&state){try{store.save(state);}catch{}}});
 app.on('window-all-closed',()=>{if(testMode)app.quit();});

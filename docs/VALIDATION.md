@@ -18,6 +18,8 @@ This file records executed checks, distinct from features that still require a r
 
 ## Still pending
 
+Startup/cache fix: a fresh isolated native test verifies that a second launch exits successfully, emits no cache-creation errors, and leaves the primary database unchanged. Chromium session/cache files now use `browser-session` beneath the app data directory, separate from the encrypted activity database. Test runs use separate profiles and report startup failures directly; timeout failures return a nonzero exit code.
+
 - Standalone release packaging and signing.
 - Multi-day battery/performance pilot.
 
