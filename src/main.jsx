@@ -17,8 +17,8 @@ function SessionDetail({detail,onClose}){return (<section id={`detail-${detail.i
 
 function Axis({start,end}){
  const ticks=[start];for(let h=Math.ceil((start+1)/4)*4;h<end;h+=4)ticks.push(h);ticks.push(end);
- const periods=[{hour:3,label:'Night',Icon:Moon},{hour:9,label:'Morning',Icon:Sunrise},{hour:15,label:'Afternoon',Icon:Sun},{hour:21,label:'Night',Icon:Moon}];
- return <div className="ribbon-axis" aria-hidden="true">{periods.filter(p=>p.hour>start&&p.hour<end).map(({hour,label,Icon})=><i className={'day-period '+(label==='Night'?'night':'daylight')} key={hour} style={{left:`${(hour-start)/(end-start)*100}%`}}><Icon size={16} strokeWidth={1.5}/><small>{label}</small></i>)}{ticks.map(h=><span key={h} style={{left:`${(h-start)/(end-start)*100}%`}}>{hourLabel(h)}</span>)}</div>;
+ const periods=[{start:0,end:6,label:'Night',Icon:Moon},{start:6,end:12,label:'Morning',Icon:Sunrise},{start:12,end:18,label:'Afternoon',Icon:Sun},{start:18,end:24,label:'Night',Icon:Moon}];
+ return <div className="ribbon-axis" aria-hidden="true">{periods.filter(p=>p.end>start&&p.start<end).map(({start:a,end:b,label,Icon})=><i className={'day-period '+(label==='Night'?'night':label.toLowerCase())} key={a} style={{left:`${(Math.max(a,start)-start)/(end-start)*100}%`,width:`${(Math.min(b,end)-Math.max(a,start))/(end-start)*100}%`}}><Icon size={28} strokeWidth={1.8}/><small>{label}</small></i>)}{ticks.map(h=><span key={h} style={{left:`${(h-start)/(end-start)*100}%`}}>{hourLabel(h)}</span>)}</div>;
 }
 function Marks({pieces,interactive=false,onSelect,selected}){
  return pieces.map(p=>{const x=p.session,style={left:`${p.left}%`,width:`${p.width}%`,background:activityColor(x.winner.label)},label=`${x.winner.label}, ${clock(x.start)}–${clock(x.end)}, ${minutes((new Date(x.end)-new Date(x.start))/1000)}`;
