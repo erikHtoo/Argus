@@ -1,9 +1,14 @@
 import {localDate} from './core.mjs';
-export const DEFAULT_VIEW={days:7,start:8,end:24};
+export const DEFAULT_VIEW={days:7,start:0,end:24};
 export function viewPreferences(value={}){
  const start=Number(value.start),end=Number(value.end);
  const valid=Number.isInteger(start)&&Number.isInteger(end)&&start>=0&&end<=24&&end>start;
- return {days:[1,7,14,30].includes(Number(value.days))?Number(value.days):7,start:valid?start:8,end:valid?end:24};
+ return {days:[1,7,14,30].includes(Number(value.days))?Number(value.days):7,start:valid?start:0,end:valid?end:24};
+}
+export function restoreViewPreferences(value={}){
+ const view=viewPreferences(value);
+ // Upgrade the previous default once; keep custom hours and subsequent choices.
+ return value.version!==2&&view.start===8&&view.end===24?{...view,start:0}:view;
 }
 export function dateRange(last,count){return Array.from({length:count},(_,i)=>{const d=new Date(last+'T12:00:00');d.setDate(d.getDate()-i);return localDate(d);});}
 export function hourLabel(hour){return hour===24||hour===0?'12am':hour===12?'12pm':hour<12?`${hour}am`:`${hour-12}pm`;}

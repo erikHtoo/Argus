@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {viewPreferences,dateRange,activityColor,ribbonPieces} from '../shared/day-view.mjs';
+import {viewPreferences,restoreViewPreferences,dateRange,activityColor,ribbonPieces} from '../shared/day-view.mjs';
 const session=(start,end)=>({id:'s',start:new Date(`2026-09-09T${start}:00`).toISOString(),end:new Date(`2026-09-09T${end}:00`).toISOString(),winner:{label:'Valorant'}});
 test('same activity has a stable color independent of day and process alias',()=>{assert.equal(activityColor('Valorant'),activityColor('valorant-win64-shipping'));assert.equal(activityColor('Code.exe'),activityColor('VS Code'));assert.notEqual(activityColor('Valorant'),activityColor('YouTube'));assert.equal(activityColor('Custom App'),activityColor('Custom App'));});
 test('positions and widths are proportional to the shared visible range',()=>{const [p]=ribbonPieces([session('16:00','18:00')],'2026-09-09',8,24);assert.equal(p.left,50);assert.equal(p.width,12.5);assert.equal(p.seconds,7200);});
 test('folding clips crossing sessions without losing duration',()=>{const sessions=[session('07:00','10:00')];const early=ribbonPieces(sessions,'2026-09-09',0,8),main=ribbonPieces(sessions,'2026-09-09',8,24);assert.equal(early[0].seconds,3600);assert.equal(main[0].seconds,7200);assert.equal(main[0].left,0);assert.equal(early[0].seconds+main[0].seconds,10800);});
 test('overnight activity is absent from visible range but present in the fold',()=>{const sessions=[session('05:00','06:00')];assert.equal(ribbonPieces(sessions,'2026-09-09',8,24).length,0);assert.equal(ribbonPieces(sessions,'2026-09-09',0,8)[0].seconds,3600);});
 test('day ranges cross month boundaries and preserve requested count',()=>{assert.deepEqual(dateRange('2026-09-02',3),['2026-09-02','2026-09-01','2026-08-31']);});
-test('stored view preferences reject invalid and inverted hour ranges',()=>{assert.deepEqual(viewPreferences({days:9,start:-1,end:1}),{days:7,start:8,end:24});assert.deepEqual(viewPreferences({days:14,start:12,end:20}),{days:14,start:12,end:20});assert.deepEqual(viewPreferences({start:20,end:8}),{days:7,start:8,end:24});});
+test('stored view preferences reject invalid and inverted hour ranges',()=>{assert.deepEqual(viewPreferences({days:9,start:-1,end:1}),{days:7,start:0,end:24});assert.deepEqual(viewPreferences({days:14,start:12,end:20}),{days:14,start:12,end:20});assert.deepEqual(viewPreferences({start:20,end:8}),{days:7,start:0,end:24});});
+
+test('full day is default and the previous default upgrades without overriding custom choices',()=>{assert.deepEqual(viewPreferences(),{days:7,start:0,end:24});assert.deepEqual(restoreViewPreferences({days:14,start:8,end:24}),{days:14,start:0,end:24});assert.deepEqual(restoreViewPreferences({days:7,start:6,end:22}),{days:7,start:6,end:22});assert.deepEqual(restoreViewPreferences({days:7,start:8,end:24,version:2}),{days:7,start:8,end:24});});

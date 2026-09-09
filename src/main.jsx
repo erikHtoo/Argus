@@ -1,9 +1,10 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {createRoot} from 'react-dom/client';
+import {Sunrise,Sun,Moon} from 'lucide-react';
 import {createPreview} from './preview';
 import {localDate} from '../shared/core.mjs';
 import {daySessions} from '../shared/sessions.mjs';
-import {activityColor,dateRange,hourLabel,ribbonPieces,viewPreferences} from '../shared/day-view.mjs';
+import {activityColor,dateRange,hourLabel,ribbonPieces,viewPreferences,restoreViewPreferences} from '../shared/day-view.mjs';
 import './styles.css';
 import './sessions.css';
 import './days.css';
@@ -16,7 +17,8 @@ function SessionDetail({detail,onClose}){return (<section id={`detail-${detail.i
 
 function Axis({start,end}){
  const ticks=[start];for(let h=Math.ceil((start+1)/4)*4;h<end;h+=4)ticks.push(h);ticks.push(end);
- return <div className="ribbon-axis" aria-hidden="true">{ticks.map(h=><span key={h} style={{left:`${(h-start)/(end-start)*100}%`}}>{hourLabel(h)}</span>)}</div>;
+ const periods=[{hour:3,label:'Night',Icon:Moon},{hour:9,label:'Morning',Icon:Sunrise},{hour:15,label:'Afternoon',Icon:Sun},{hour:21,label:'Night',Icon:Moon}];
+ return <div className="ribbon-axis" aria-hidden="true">{periods.filter(p=>p.hour>start&&p.hour<end).map(({hour,label,Icon})=><i className={'day-period '+(label==='Night'?'night':'daylight')} key={hour} style={{left:`${(hour-start)/(end-start)*100}%`}}><Icon size={16} strokeWidth={1.5}/><small>{label}</small></i>)}{ticks.map(h=><span key={h} style={{left:`${(h-start)/(end-start)*100}%`}}>{hourLabel(h)}</span>)}</div>;
 }
 function Marks({pieces,interactive=false,onSelect,selected}){
  return pieces.map(p=>{const x=p.session,style={left:`${p.left}%`,width:`${p.width}%`,background:activityColor(x.winner.label)},label=`${x.winner.label}, ${clock(x.start)}–${clock(x.end)}, ${minutes((new Date(x.end)-new Date(x.start))/1000)}`;
@@ -25,10 +27,10 @@ function Marks({pieces,interactive=false,onSelect,selected}){
 }
 function App(){
  const [state,setState]=useState(null),[date,setDate]=useState(localDate()),[followToday,setFollowToday]=useState(true),[activeDay,setActiveDay]=useState(null),[selected,setSelected]=useState(null),[settings,showSettings]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false);
- const [view,setView]=useState(()=>{try{return viewPreferences(JSON.parse(localStorage.getItem('argus-day-view'))||{});}catch{return viewPreferences();}});
+ const [view,setView]=useState(()=>{try{return restoreViewPreferences(JSON.parse(localStorage.getItem('argus-day-view'))||{});}catch{return viewPreferences();}});
  const [expanded,setExpanded]=useState(false);
  useEffect(()=>{let live=true;api.invoke('snapshot').then(s=>{if(live)setState(s);}).catch(e=>setError(e.message));const off=api.subscribe(s=>{if(live)setState(s);});return()=>{live=false;off();};},[]);
- useEffect(()=>{try{localStorage.setItem('argus-day-view',JSON.stringify(view));}catch{}},[view]);
+ useEffect(()=>{try{localStorage.setItem('argus-day-view',JSON.stringify({...view,version:2}));}catch{}},[view]);
  useEffect(()=>{if(!followToday)return;const timer=setInterval(()=>setDate(localDate()),30000);return()=>clearInterval(timer);},[followToday]);
  async function run(action,payload){setBusy(true);setError('');try{await api.invoke(action,payload);setState(await api.invoke('snapshot'));}catch(e){setError(e.message);}finally{setBusy(false);}}
  function chooseDate(value){setDate(value);setFollowToday(value===localDate());setActiveDay(null);setSelected(null);}

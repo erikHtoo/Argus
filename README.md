@@ -20,7 +20,7 @@ Click **Start tracking** to enable local foreground-app and window-title trackin
 
 The overview shows one proportional ribbon per day. Position indicates when an activity happened; width indicates its elapsed duration. The same activity keeps the same color on every day.
 
-Choose 1, 7, 14, or 30 days, an ending date, and your preferred visible hours. The default is 8am–midnight. Hours outside that range are folded into compact sections with an activity amount, on the same shared scale for every row. Show 24 hours expands all rows together. These display preferences are saved locally.
+Choose 1, 7, 14, or 30 days, an ending date, and your preferred visible hours. The default is midnight–midnight, with sunrise, sun, and moon markers for quick orientation. Custom narrower ranges fold outside hours into compact sections with an activity amount, on the same shared scale for every row. Show 24 hours expands all rows together. These display preferences are saved locally. The previous 8am–midnight default upgrades once to the full day; other custom ranges remain saved.
 
 Click a day or a folded section to open the complete 24-hour day. Select a session on the ribbon, or use the session picker for a short block, to see app totals and sustained video titles. Unrecorded gaps remain blank; idle is a distinct activity color.
 

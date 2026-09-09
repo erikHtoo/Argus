@@ -40,10 +40,14 @@ export async function runSmoke({win,app,root,store,state}) {
   await win.webContents.executeJavaScript(`(()=>{const el=document.querySelector('input[type=date]');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(el,"${date}");el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`);
   await new Promise(resolve=>setTimeout(resolve,100));
   assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.day-row').length"),7);
+  assert.equal(await win.webContents.executeJavaScript("document.querySelector('select[aria-label=\"Visible start hour\"]').value"),'0');
+  assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.folded-hours').length"),0);
+  assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.day-period svg').length"),4);
   assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.session-card').length"),0);
   fs.mkdirSync(path.join(root,'output','playwright'),{recursive:true});
   const capture=async name=>fs.writeFileSync(path.join(root,'output','playwright',name),(await win.webContents.capturePage()).toPNG());
   await capture('desktop-days.png');
+  await capture('desktop-full-day-symbols.png');
   const select=async(label,value)=>{await win.webContents.executeJavaScript(`(()=>{const el=document.querySelector('select[aria-label="${label}"]');Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set.call(el,"${value}");el.dispatchEvent(new Event('change',{bubbles:true}));})()`);await new Promise(r=>setTimeout(r,120));};
   await select('Number of days','14');
   assert.equal(await win.webContents.executeJavaScript("document.querySelectorAll('.day-row').length"),14);
