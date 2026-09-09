@@ -18,9 +18,13 @@ Click **Start tracking** to enable local foreground-app and window-title trackin
 
 ## Session overview
 
-The date filter shows the whole day as variable-length sessions. One card names the dominant activity; clicking it reveals app totals and sustained YouTube titles.
+The overview shows one proportional ribbon per day. Position indicates when an activity happened; width indicates its elapsed duration. The same activity keeps the same color on every day.
 
-For example: **Valorant session · 2h**, with **Valorant 1h 30m / Chrome 30m** inside. Browser detours dispersed throughout gaming do not create separate cards. A YouTube session followed by sustained gaming becomes two sessions.
+Choose 1, 7, 14, or 30 days, an ending date, and your preferred visible hours. The default is 8am–midnight. Hours outside that range are folded into compact sections with an activity amount, on the same shared scale for every row. Show 24 hours expands all rows together. These display preferences are saved locally.
+
+Click a day or a folded section to open the complete 24-hour day. Select a session on the ribbon, or use the session picker for a short block, to see app totals and sustained video titles. Unrecorded gaps remain blank; idle is a distinct activity color.
+
+For example: **Valorant session · 2h**, with **Valorant 1h 30m / Chrome 30m** inside. Browser detours dispersed throughout gaming do not create separate blocks. A YouTube session followed by sustained gaming becomes two sessions.
 
 - The tracker accumulates app totals in minute buckets, without retaining a chronological tab-switch log.
 - Sessions appear after five minutes of total observed activity. There are no fixed hourly boundaries.

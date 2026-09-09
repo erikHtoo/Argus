@@ -2,6 +2,13 @@
 
 This file records executed checks, distinct from features that still require a real-device pilot.
 
+## Proportional day ribbons — September 9, 2026
+
+- 36 tests passed, including shared-scale positioning, duration-proportional widths, folds crossing session boundaries, overnight activity, consistent colors, preference validation, and date-range boundaries.
+- Native Electron smoke passed: seven/fourteen-day filtering, ending-date selection, visible-hour preference persistence, overnight fold opening a full day, 90/30-minute session details, matching activity colors, and narrow-window layout.
+- Production build and syntax/type check passed. Inspected overview, detailed day, and narrow-window screenshots with synthetic data.
+- This is a presentation change; foreground tracking and session segmentation are unchanged. The earlier same-sized session-card UI is replaced.
+
 ## Activity journal pivot — September 8, 2026
 
 ### Variable sessions — September 9, 2026
